@@ -21,7 +21,7 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManagerFactory;
 
 public class TlsConnection {
-    private final static String TAG = "TLS";
+    private final static String TAG = "TLSConnection";
 
     private final SSLCertificateSocketFactory sslCertificateSocketFactory;
 
@@ -41,23 +41,17 @@ public class TlsConnection {
             throws IOException {
         SSLSocket socket;
         try {
-            socket = createConnection(urlArray, C.connectionTimeout1);
-        } catch (IOException e) {
+            socket = createConnection(urlArray, C.connectionTimeout1, hostName);
+        } catch (ConnectException e) {
             Util.logWarning(TAG, "First round did not connect, retrying", e);
-            socket = createConnection(urlArray, C.connectionTimeout2);
+            socket = createConnection(urlArray, C.connectionTimeout2, hostName);
         }
-
-        socket.setSoTimeout(15000);
-        socket.setEnabledProtocols(new String[]{"TLSv1.2"});
-
-        sslCertificateSocketFactory.setHostname(socket, hostName);
-        //socket.startHandshake();
         WritableByteChannel out = Channels.newChannel(socket.getOutputStream());
         out.write(buf);
         return socket.getInputStream();
     }
 
-    private SSLSocket createConnection(String[] urlArray, int timeout) throws IOException {
+    private SSLSocket createConnection(String[] urlArray, int timeout, String hostName) throws ConnectException {
         List<String> domains = Arrays.asList(urlArray);
         Collections.shuffle(domains);
         for (String domain : domains) {
@@ -72,12 +66,19 @@ public class TlsConnection {
             }
             Collections.shuffle(ips);
             for (InetAddress ip : ips) {
+                Util.logInfo(TAG, "Trying " + ip);
                 try {
                     SSLSocket socket = (SSLSocket) sslCertificateSocketFactory.createSocket();
                     socket.connect(new InetSocketAddress(ip, port), timeout);
+                    socket.setSoTimeout(15000);
+                    socket.setEnabledProtocols(new String[]{"TLSv1.3"});
+                    sslCertificateSocketFactory.setHostname(socket, hostName);
+                    socket.startHandshake();
                     return socket;
                 } catch (SocketTimeoutException e) {
                     Util.logWarning(TAG, String.format("Socket timed out: %s:%s", ip, port), e);
+                } catch (IOException e) {
+                    Util.logWarning(TAG, String.format("Error connection socket: %s:%s", ip, port), e);
                 }
             }
         }

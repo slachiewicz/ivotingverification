@@ -49,7 +49,8 @@ public class BDocContainer {
 
     public enum SigningAlg {
         SHA256_RSA,
-        SHA256_ECDSA
+        SHA256_ECDSA,
+        SHA384_ECDSA
     }
 
     private final MessageDigest sha256;
@@ -83,9 +84,9 @@ public class BDocContainer {
                 verificationProfile.getTspregServiceCert(),
                 container.getSignatureValueCanon());
 
-		long d = producedAt - genTime;
+		long d = genTime - producedAt;
 		if (d < 0) {
-			throw new Exception("OCSP predates PKIX");
+			throw new Exception("PKIX predates OCSP");
 		}
 		if (d > Util.MAX_TIME_BETWEEN_OCSP_PKIX) {
 			throw new Exception("PKIX and OCSP timestamps too far apart");
@@ -219,12 +220,14 @@ public class BDocContainer {
             case SHA256_ECDSA:
                 signingAlgStr = "SHA256withECDSA";
                 break;
+            case SHA384_ECDSA:
+                signingAlgStr = "SHA384withECDSA";
         }
         Signature signature = Signature.getInstance(signingAlgStr, "SC");
         signature.initVerify(pk);
         signature.update(signedInfo);
         byte[] sigBytes = Base64.decode(sig, Base64.NO_WRAP);
-        if (signingAlg == SigningAlg.SHA256_ECDSA) {
+        if (signingAlg == SigningAlg.SHA256_ECDSA || signingAlg == SigningAlg.SHA384_ECDSA) {
             byte[] tmp = new byte[sigBytes.length / 2];
             System.arraycopy(sigBytes, 0, tmp, 0, tmp.length);
             BigInteger r = new BigInteger(1, tmp);
@@ -263,6 +266,9 @@ public class BDocContainer {
                 break;
             case "http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256":
                 signingAlg = SigningAlg.SHA256_ECDSA;
+                break;
+            case "http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha384":
+                signingAlg = SigningAlg.SHA384_ECDSA;
                 break;
             default:
                 Util.logError(TAG, "Invalid signing algorithm: " + signingAlgStr);

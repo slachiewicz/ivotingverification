@@ -1,6 +1,5 @@
 package ee.vvk.ivotingverification.adapter;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
@@ -17,7 +16,6 @@ import java.util.List;
 import ee.vvk.ivotingverification.R;
 import ee.vvk.ivotingverification.model.Candidate;
 import ee.vvk.ivotingverification.util.C;
-import ee.vvk.ivotingverification.util.RegexMatcher;
 import ee.vvk.ivotingverification.util.TriangleView;
 import ee.vvk.ivotingverification.util.Util;
 
@@ -32,9 +30,6 @@ public class CandidatesListAdapter extends BaseAdapter {
 	private final List<String> questionlist;
 	private final LayoutInflater mInflater;
 	private final Context context;
-
-	private static final String TAG = CandidatesListAdapter.class
-			.getSimpleName();
 
 	public CandidatesListAdapter(Context context, List<Candidate> entries,
 			List<String> questionList) {
@@ -110,15 +105,8 @@ public class CandidatesListAdapter extends BaseAdapter {
 				.generateHexColorValue(C.lblInnerContainerForeground));
 		holder.candidateParty.setTypeface(C.typeFace);
 
-		String tempNumber = "";
-
-		if (!RegexMatcher.IsCandidateNumber(entries.get(position).number)) {
-			Util.logDebug(TAG, "Wrong candidate number");
-			Util.startErrorIntent((Activity) context, C.badServerResponseMessage);
-		} else {
-			tempNumber = entries.get(position).number.substring(
+		String tempNumber = entries.get(position).number.substring(
 					entries.get(position).number.indexOf(".") + 1);
-		}
 
 		TriangleView cv = new TriangleView(context,
 				Util.generateHexColorValue(C.lblInnerContainerBackground),
@@ -137,13 +125,7 @@ public class CandidatesListAdapter extends BaseAdapter {
 		} else {
 			holder.electionTitle.setText(questionlist.get(position));
 		}
-
-		if (!RegexMatcher.IsLessThan101UtfChars(entries.get(position).name)) {
-			Util.logDebug(TAG, "Wrong candidate name");
-			Util.startErrorIntent((Activity) context, C.badServerResponseMessage);
-		} else {
-			holder.candidateName.setText(entries.get(position).name);
-		}
+		holder.candidateName.setText(entries.get(position).name);
 		holder.candidateParty.setText(entries.get(position).party);
 
 		return convertView;

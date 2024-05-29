@@ -53,7 +53,7 @@ public class Util {
 	public final static String ENCODING = "UTF-8";
 	public final static int PERMISSION_REQUEST_CAMERA = 1;
 
-	public final static long MAX_TIME_BETWEEN_OCSP_PKIX = 1000 * 60 * 15; // 15 minutes in ms
+	public final static long MAX_TIME_BETWEEN_OCSP_PKIX = 1000 * 60 * 5; // 5 minutes in ms
 	public final static long VIBRATE_DURATION = 350L;
 
 	public static boolean DEBUGGABLE = false;

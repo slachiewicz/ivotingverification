@@ -5,6 +5,7 @@ import android.util.Base64;
 import org.spongycastle.asn1.ASN1Encodable;
 import org.spongycastle.asn1.ASN1InputStream;
 import org.spongycastle.asn1.ASN1Integer;
+import org.spongycastle.asn1.ASN1ObjectIdentifier;
 import org.spongycastle.asn1.ASN1Primitive;
 import org.spongycastle.asn1.ASN1Sequence;
 import org.spongycastle.asn1.DERGeneralString;
@@ -56,6 +57,11 @@ public class ElGamalPub {
     }
 
     public String getDecryptedChoice(byte[] in, byte[] rnd) throws Exception {
+        if (!checkAsn1Structure(in)) {
+            Util.logDebug(TAG, "Error: Vote is not in the correct ASN.1 structure");
+            return null;
+        }
+
         if (!checkRnd(in, rnd)) {
             Util.logDebug(TAG, "Error: the r given by the Voting Application is not the actual r used (c1 != g^r)");
             return null;
@@ -72,6 +78,21 @@ public class ElGamalPub {
         }
         BigInteger m = s.compareTo(q) > 0 ? p.subtract(s) : s;
         return stripPadding(m.toByteArray());
+    }
+
+    public boolean checkAsn1Structure(byte[] in) throws Exception {
+        ASN1InputStream bIn = new ASN1InputStream(new ByteArrayInputStream(in));
+        ASN1Sequence root = (ASN1Sequence) bIn.readObject();
+        if (root.size() != 2) {
+            return false;
+        }
+        ASN1Sequence firstSequence = (ASN1Sequence) root.getObjectAt(0);
+        ASN1ObjectIdentifier asn1ObjectIdentifier = (ASN1ObjectIdentifier) firstSequence.getObjectAt(0);
+        String objectIdentifierValue = "1.3.6.1.4.1.3029.2.1";
+        if (!asn1ObjectIdentifier.getId().equals(objectIdentifierValue) || firstSequence.size() != 1) {
+            return false;
+        }
+        return ((ASN1Sequence) root.getObjectAt(1)).size() == 2;
     }
 
     private boolean checkRnd(byte[] in, byte[] rnd) throws Exception {

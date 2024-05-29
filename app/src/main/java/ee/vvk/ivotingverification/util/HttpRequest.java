@@ -9,11 +9,11 @@ import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.KeyManagementException;
+import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.Map;
-import java.io.InputStream;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManager;
@@ -29,10 +29,10 @@ public class HttpRequest {
 
 	private final SSLSocketFactory sslFactory;
 
-	public HttpRequest(InputStream truststore) throws Exception {
+	public HttpRequest() throws Exception {
 		TrustManagerFactory tmf = TrustManagerFactory.getInstance("X509");
-		tmf.init(Util.loadTrustStore(truststore));
-		this.sslFactory = new TLSv12SocketFactory(null, tmf.getTrustManagers(), null);
+		tmf.init((KeyStore) null);
+		this.sslFactory = new TLSv13SocketFactory(null, tmf.getTrustManagers(), null);
 	}
 
 	public String get(String url) throws IOException {
@@ -65,14 +65,14 @@ public class HttpRequest {
 	}
 
 	/**
-	 * TLSv12SocketFactory wraps a "TLSv1.2" SSLContext's SSLSocketFactory to only enable TLS v1.2.
+	 * TLSv12SocketFactory wraps a "TLSv1.3" SSLContext's SSLSocketFactory to only enable TLS v1.3.
 	 */
-	private class TLSv12SocketFactory extends SSLSocketFactory {
+	private class TLSv13SocketFactory extends SSLSocketFactory {
 		private final SSLSocketFactory factory;
 
-		TLSv12SocketFactory(KeyManager[] km, TrustManager[] tm, SecureRandom random)
+		TLSv13SocketFactory(KeyManager[] km, TrustManager[] tm, SecureRandom random)
 				throws NoSuchAlgorithmException, KeyManagementException {
-			SSLContext sslcontext = SSLContext.getInstance("TLSv1.2");
+			SSLContext sslcontext = SSLContext.getInstance("TLSv1.3");
 			sslcontext.init(km, tm, random);
 			factory = sslcontext.getSocketFactory();
 		}
@@ -90,34 +90,34 @@ public class HttpRequest {
 		@Override
 		public Socket createSocket(Socket s, String host, int port, boolean autoClose)
 				throws IOException {
-			return tlsv12(factory.createSocket(s, host, port, autoClose));
+			return tlsv13(factory.createSocket(s, host, port, autoClose));
 		}
 
 		@Override
 		public Socket createSocket(String host, int port) throws IOException {
-			return tlsv12(factory.createSocket(host, port));
+			return tlsv13(factory.createSocket(host, port));
 		}
 
 		@Override
 		public Socket createSocket(String host, int port, InetAddress localHost, int localPort)
 				throws IOException {
-			return tlsv12(factory.createSocket(host, port, localHost, localPort));
+			return tlsv13(factory.createSocket(host, port, localHost, localPort));
 		}
 
 		@Override
 		public Socket createSocket(InetAddress host, int port) throws IOException {
-			return tlsv12(factory.createSocket(host, port));
+			return tlsv13(factory.createSocket(host, port));
 		}
 
 		@Override
 		public Socket createSocket(InetAddress address, int port, InetAddress localAddress, int localPort)
 				throws IOException {
-			return tlsv12(factory.createSocket(address, port, localAddress, localPort));
+			return tlsv13(factory.createSocket(address, port, localAddress, localPort));
 		}
 
-		private Socket tlsv12(Socket socket) {
+		private Socket tlsv13(Socket socket) {
 			if (socket instanceof SSLSocket) {
-				((SSLSocket) socket).setEnabledProtocols(new String[]{"TLSv1.2"});
+				((SSLSocket) socket).setEnabledProtocols(new String[]{"TLSv1.3"});
 			}
 			return socket;
 		}

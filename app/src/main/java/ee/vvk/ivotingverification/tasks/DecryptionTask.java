@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import ee.vvk.ivotingverification.model.Candidate;
 import ee.vvk.ivotingverification.model.Vote;
+import ee.vvk.ivotingverification.util.CheckBallot;
 import ee.vvk.ivotingverification.util.ElGamalPub;
 
 
@@ -36,6 +37,11 @@ public class DecryptionTask extends BaseTask<ArrayList<Candidate>> {
             if (decChoice.equals("")) {
                 result.add(Candidate.NO_CHOICE);
             } else {
+                if (CheckBallot.wrongCandidateNumber(decChoice)
+                        || CheckBallot.wrongCandidateName(decChoice)
+                        || CheckBallot.decryptedChoiceNotInCandidateList(decChoice)) {
+                    return null;
+                }
                 result.add(new Candidate(decChoice));
             }
         }

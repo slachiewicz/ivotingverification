@@ -152,4 +152,6 @@ public class C {
 	public static List<String> languages = new ArrayList<>();
 
 	public static HashMap<String, String> elections = new HashMap<>();
+
+	public static ArrayList<String> candidateList = new ArrayList<>();
 }

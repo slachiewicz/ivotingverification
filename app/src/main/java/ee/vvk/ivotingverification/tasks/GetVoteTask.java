@@ -1,5 +1,6 @@
 package ee.vvk.ivotingverification.tasks;
 
+import android.app.Activity;
 import android.util.Base64;
 
 import java.io.InputStream;
@@ -14,6 +15,7 @@ import ee.vvk.ivotingverification.model.VoteContainerInfo;
 import ee.vvk.ivotingverification.model.VerificationProfile;
 import ee.vvk.ivotingverification.util.BDocContainer;
 import ee.vvk.ivotingverification.util.C;
+import ee.vvk.ivotingverification.util.JSONParser;
 import ee.vvk.ivotingverification.util.JsonRpc;
 import ee.vvk.ivotingverification.util.TlsConnection;
 import ee.vvk.ivotingverification.util.Util;
@@ -59,6 +61,14 @@ public class GetVoteTask extends BaseTask<VoteContainerInfo> {
         byte[] containerData = Base64.decode((String) res.result.get("Vote"), Base64.DEFAULT);
         byte[] ocspData = Base64.decode((String) res.result.get("ocsp"), Base64.DEFAULT);
         byte[] regData = Base64.decode((String) res.result.get("tspreg"), Base64.DEFAULT);
+        String choicesListInput = (String) res.result.get("ChoicesList");
+        if (choicesListInput != null) {
+            byte[] choicesListDecode = org.spongycastle.util.encoders.Base64.decode(choicesListInput);
+            JSONParser.parseCandidateList(new String(choicesListDecode));
+        } else {
+            Util.startErrorIntent((Activity) activity, C.badServerResponseMessage);
+            return null;
+        }
 
         BDocContainer container = BDocContainer.getVerifiedContainer(verificationProfile,
                 containerData, ocspData, regData);

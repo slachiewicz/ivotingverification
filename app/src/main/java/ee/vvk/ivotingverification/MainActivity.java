@@ -24,7 +24,6 @@ import androidx.camera.view.PreviewView;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
 
 import java.io.File;
-import java.io.InputStream;
 import java.security.Security;
 import java.util.Objects;
 
@@ -93,8 +92,7 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskActivity
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected()) {
             TaskRunner runner = new TaskRunner();
-            InputStream truststorein = getResources().openRawResource(R.raw.mytruststore);
-            runner.executeAsync(new GetConfigTask(this, truststorein, C.configURL));
+            runner.executeAsync(new GetConfigTask(this, C.configURL));
         } else {
             Util.startNetworkErrorIntent(MainActivity.this, C.noNetworkMessage);
         }

@@ -4,7 +4,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Objects;
 
 /**
  * JSON parser.
@@ -35,6 +37,29 @@ public class JSONParser {
 			parseJsonColors(appConfig);
 			parseJsonParams(appConfig);
 			parseJsonLanguages(appConfig);
+		}
+	}
+
+	public static void parseCandidateList(String input) throws JSONException {
+		if (input.startsWith(UTF8_BOM)) {
+			input = input.substring(1);
+		}
+		ArrayList<String> candidateList = new ArrayList<>();
+		JSONObject jsonObject = new JSONObject(input);
+		for (Iterator<String> it = jsonObject.keys(); it.hasNext();) {
+			String party = it.next();
+			if (!jsonObject.isNull(party)) {
+				parseCandidates(Objects.requireNonNull(jsonObject.optJSONObject(party)), party, candidateList);
+			}
+		}
+		C.candidateList = candidateList;
+	}
+
+	private static void parseCandidates(JSONObject choices, String party, ArrayList<String> candidateList) {
+		for (Iterator<String> it = choices.keys(); it.hasNext();) {
+			String number = it.next();
+			String name = choices.optString(number, "");
+			candidateList.add(number + (char) 0x1F + party + (char) 0x1F + name);
 		}
 	}
 

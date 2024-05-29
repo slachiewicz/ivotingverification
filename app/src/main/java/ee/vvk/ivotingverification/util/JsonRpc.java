@@ -121,6 +121,7 @@ public class JsonRpc {
                 case "SessionID":
                 case "Type":
                 case "Vote":
+                case "ChoicesList":
                     res.put(name, reader.nextString());
                     break;
                 case "Qualification":

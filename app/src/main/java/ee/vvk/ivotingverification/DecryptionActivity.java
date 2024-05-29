@@ -9,6 +9,7 @@ import android.os.CountDownTimer;
 import android.os.Vibrator;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -47,7 +48,8 @@ public class DecryptionActivity extends Activity implements AsyncTaskActivity<Ar
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE,
+                WindowManager.LayoutParams.FLAG_SECURE);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         setContentView(R.layout.bruteforce_activity);
